@@ -12,6 +12,7 @@ public class TicketTypeRequest {
     public TicketTypeRequest(Type type, int noOfTickets) {
         this.type = type;
         this.noOfTickets = noOfTickets;
+        //number of seats - infant doesn't take up a seat.
     }
 
     public int getNoOfTickets() {
