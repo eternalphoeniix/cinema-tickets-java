@@ -3,11 +3,10 @@ package uk.gov.dwp.uc.pairtest.domain;
 /**
  * Immutable Object
  */
-
 public class TicketTypeRequest {
-
-    private int noOfTickets;
-    private Type type;
+    //final ensures object is now immutable.
+    private final int noOfTickets;
+    private final Type type;
 
     public TicketTypeRequest(Type type, int noOfTickets) {
         this.type = type;
@@ -24,7 +23,25 @@ public class TicketTypeRequest {
     }
 
     public enum Type {
-        ADULT, CHILD , INFANT
+        ADULT(20, 1),
+        CHILD(10, 1),
+        INFANT(0, 0);
+        private final int numberOfSeats;
+        private final int ticketPrice;
+
+        Type(int ticketPrice, int numberOfSeats) {
+            this.ticketPrice = ticketPrice;
+            this.numberOfSeats = numberOfSeats;
+        }
+
+        public int getCost() {
+            return ticketPrice;
+        }
+
+        public int getNumberOfSeats() {
+            return numberOfSeats;
+        }
+
     }
 
 }
