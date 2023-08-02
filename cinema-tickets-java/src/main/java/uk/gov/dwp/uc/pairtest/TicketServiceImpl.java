@@ -7,14 +7,13 @@ public class TicketServiceImpl implements TicketService {
     /**
      * Should only have private methods other than the one below.
      */
-
     @Override
     public void purchaseTickets(Long accountId, TicketTypeRequest... ticketTypeRequests) throws InvalidPurchaseException {
         //worth splitting into a separate method
-        if ( accountId>0){
+        if (accountId > 0) {
 
         } else {
-            throw new InvalidPurchaseException();
+            throw new InvalidPurchaseException("Account ID Invalid: " + accountId);
         }
 
         //need to validate ticket request is valid - max of 20 tickets, 1 child per adult. Clarify infant not buying, still need a ticket.
@@ -23,5 +22,4 @@ public class TicketServiceImpl implements TicketService {
         //send request to seating service.
         //reject any invalid requests.
     }
-
 }
