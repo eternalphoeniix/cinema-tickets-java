@@ -21,7 +21,7 @@ public class AccountIdTest {
 
     @Test
     @DisplayName("Account ID Greater than minimum")
-    void givenAccountIdGreaterThanZero_whenPurchaseTickets_thenSuccess() {
+    void givenAccountIdGreaterThanZero_whenPurchaseTickets_thenAssertTrue() {
         Assertions.fail();
         //        ticketService.purchaseTickets(1L, new TicketTypeRequest(TicketTypeRequest.Type.ADULT, 1));
     }
