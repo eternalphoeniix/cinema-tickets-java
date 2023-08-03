@@ -19,7 +19,8 @@ public class TicketServiceImpl implements TicketService {
         LOGGER.debug("Purchasing Ticket(s)");
         try {
             if (isRequestValid(accountId, ticketTypeRequests)) {
-            } else {
+            }
+            else {
                 throw new InvalidPurchaseException();
             }
         } catch (Exception e) {
@@ -47,7 +48,8 @@ public class TicketServiceImpl implements TicketService {
         if (accountId >= MINACCOUNTID) {
             LOGGER.debug("Account ID is valid");
             return true;
-        } else {
+        }
+        else {
             String message = String.format("Account ID %s is less than the system minimum: %s", accountId, MINACCOUNTID);
             throw new InvalidPurchaseException(message);
         }
@@ -56,15 +58,19 @@ public class TicketServiceImpl implements TicketService {
     private boolean isTicketCountWithinLimit(TicketTypeRequest... requests) {
         LOGGER.debug("Checking number of tickets does not exceed maximum");
         try {
-            String message;
-            int numberOfTickets = requests.length;
+            String logMessage;
+            int numberOfTickets = 0;
+            for (TicketTypeRequest request : requests) {
+                numberOfTickets += request.getNoOfTickets();
+            }
             if (numberOfTickets <= MAXREQUESTEDTICKETS && numberOfTickets >= MINREQUESTEDTICKETS) {
-                message = String.format("Number of tickets %s is within the maximum limit of %s", numberOfTickets, MAXREQUESTEDTICKETS);
-                LOGGER.debug(message);
+                logMessage = String.format("Number of tickets %s is within the maximum limit of %s", numberOfTickets, MAXREQUESTEDTICKETS);
+                LOGGER.debug(logMessage);
                 return true;
-            } else {
-                message = String.format("Number of tickets %s is outside the minimum limit of %s or maximum limit of %s", numberOfTickets, MINREQUESTEDTICKETS, MAXREQUESTEDTICKETS);
-                LOGGER.debug(message);
+            }
+            else {
+                logMessage = String.format("Number of tickets %s is outside the minimum limit of %s or maximum limit of %s", numberOfTickets, MINREQUESTEDTICKETS, MAXREQUESTEDTICKETS);
+                LOGGER.debug(logMessage);
                 return false;
             }
         } catch (Exception e) {
