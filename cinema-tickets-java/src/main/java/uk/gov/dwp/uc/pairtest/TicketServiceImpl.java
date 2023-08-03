@@ -91,15 +91,26 @@ public class TicketServiceImpl implements TicketService {
                     case INFANT -> numberOfInfants += request.getNoOfTickets();
                     case CHILD -> {/*do nothing*/}
                     default -> {
-                        String message = String.format("Invalid Ticket Type Used: %s", request.getTicketType());
-                        throw new InvalidPurchaseException(message);
+                        throw new InvalidPurchaseException(
+                                String.format("Invalid Ticket Type Used: %s", request.getTicketType())
+                        );
                     }
                 }
             }
-            return numberOfAdults >= numberOfInfants;
+            if (numberOfAdults >= numberOfInfants) {
+                LOGGER.debug(
+                        String.format("There is at least one adult per infant. Adults: %s, infants: %s", numberOfAdults, numberOfInfants)
+                );
+                return true;
+            }
+            else {
+                LOGGER.debug(
+                        String.format("There are fewer adults than infants. Adults: %s, infants: %s", numberOfAdults, numberOfInfants)
+                );
+                return false;
+            }
         } catch (Exception e) {
-            String message = "Unable to validate adult available for infant";
-            throw new InvalidPurchaseException(message, e);
+            throw new InvalidPurchaseException("Unable to validate adult available for infant", e);
         }
     }
 }
