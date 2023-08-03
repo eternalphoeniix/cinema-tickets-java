@@ -14,7 +14,6 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class AdultToInfantRatioTest {
-    TicketTypeRequest[] numberOfRequests;
     TicketServiceImpl ticketService;
 
     private static Stream<Arguments> provideValidRatios() {
@@ -35,12 +34,11 @@ public class AdultToInfantRatioTest {
     @BeforeEach
     public void beforeEach() {
         ticketService = new TicketServiceImpl();
-        numberOfRequests = new TicketTypeRequest[]{};
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "{index} ADULT: {0}, INFANT: {1}")
     @MethodSource("provideInValidRatios")
-    @DisplayName("Invalid Parent to Infant Ratio")
+    @DisplayName("NEGATIVE: Invalid Parent to Infant Ratio")
     public void givenMoreInfantsThanAdults_whenPurchaseTickets_thenInvalidPurchaseException(int numberOfAdults, int numberOfInfants) {
         assertThrows(InvalidPurchaseException.class, () ->
                 ticketService.purchaseTickets(1L,
@@ -50,9 +48,9 @@ public class AdultToInfantRatioTest {
         );
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "{index} ADULT: {0}, INFANT: {1}")
     @MethodSource("provideValidRatios")
-    @DisplayName("Valid Parent to Infant Ratio")
+    @DisplayName("POSITIVE: Valid Parent to Infant Ratio")
     public void givenInfantsEqualToAdults_whenPurchaseTickets_thenSuccess(int numberOfAdults, int numberOfInfants) {
         ticketService.purchaseTickets(1L,
                 new TicketTypeRequest(TicketTypeRequest.Type.ADULT, numberOfAdults),

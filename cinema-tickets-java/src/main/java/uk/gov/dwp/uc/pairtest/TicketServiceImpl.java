@@ -39,7 +39,8 @@ public class TicketServiceImpl implements TicketService {
         //could return this for dot chaining.
         return isAccountIdValid(accountId)
                 && isTicketCountWithinLimit(ticketTypeRequests)
-                && isAdultAvailableForInfant(ticketTypeRequests);
+                && isAdultLapAvailableForInfant(ticketTypeRequests)
+                && isAdultToMinorValid(ticketTypeRequests);
     }
 
     private boolean isAccountIdValid(long accountId) {
@@ -61,7 +62,14 @@ public class TicketServiceImpl implements TicketService {
             String logMessage;
             int numberOfTickets = 0;
             for (TicketTypeRequest request : requests) {
-                numberOfTickets += request.getNoOfTickets();
+                if (request.getNoOfTickets() <= MAXREQUESTEDTICKETS && request.getNoOfTickets() >= MINREQUESTEDTICKETS) {
+                    numberOfTickets += request.getNoOfTickets();
+                }
+                else {
+                    throw new InvalidPurchaseException(
+                            String.format("Individual TicketTypeRequest has an invalid number of tickets: %s, %s", request, numberOfTickets)
+                    );
+                }
             }
             if (numberOfTickets <= MAXREQUESTEDTICKETS && numberOfTickets >= MINREQUESTEDTICKETS) {
                 logMessage = String.format("Number of tickets %s is within the maximum limit of %s", numberOfTickets, MAXREQUESTEDTICKETS);
@@ -69,9 +77,9 @@ public class TicketServiceImpl implements TicketService {
                 return true;
             }
             else {
-                logMessage = String.format("Number of tickets %s is outside the minimum limit of %s or maximum limit of %s", numberOfTickets, MINREQUESTEDTICKETS, MAXREQUESTEDTICKETS);
-                LOGGER.debug(logMessage);
-                return false;
+                throw new InvalidPurchaseException(
+                        String.format("Number of tickets %s is outside the minimum limit of %s or maximum limit of %s", numberOfTickets, MINREQUESTEDTICKETS, MAXREQUESTEDTICKETS)
+                );
             }
         } catch (Exception e) {
             String message = "Ticket Type Request is invalid";
@@ -79,7 +87,7 @@ public class TicketServiceImpl implements TicketService {
         }
     }
 
-    private boolean isAdultAvailableForInfant(TicketTypeRequest... requests) {
+    private boolean isAdultLapAvailableForInfant(TicketTypeRequest... requests) {
         LOGGER.debug("Checking there is an adult available for each Infant");
         try {
             int numberOfAdults = 0;
@@ -111,6 +119,45 @@ public class TicketServiceImpl implements TicketService {
             }
         } catch (Exception e) {
             throw new InvalidPurchaseException("Unable to validate adult available for infant", e);
+        }
+    }
+
+    private boolean isAdultToMinorValid(TicketTypeRequest... requests) {
+        LOGGER.debug("Checking there is an adult available if there are any infants or children");
+        try {
+            boolean isAdultRequired;
+            boolean isAdultPresent = false;
+            boolean isChildPresent = false;
+            boolean isInfantPresent = false;
+            for (TicketTypeRequest request : requests
+            ) {
+                switch (request.getTicketType()) {
+                    case ADULT -> isAdultPresent = true;
+                    case INFANT -> isChildPresent = true;
+                    case CHILD -> isInfantPresent = true;
+                    default -> {
+                        throw new InvalidPurchaseException(
+                                String.format("Invalid Ticket Type Used: %s", request.getTicketType())
+                        );
+                    }
+                }
+            }
+            if (isChildPresent || isInfantPresent) {
+                LOGGER.debug("Adult is required as children or infants are present");
+                if (isAdultPresent) {
+                    LOGGER.debug("Adult is Present as children or infants are present");
+                    return true;
+                }
+                else {
+                    throw new InvalidPurchaseException("Adult not present. Is required in presence of children or infants");
+                }
+            }
+            else {
+                LOGGER.debug("No Adult is required as there are no children or infants  present");
+                return true;
+            }
+        } catch (Exception e) {
+            throw new InvalidPurchaseException("Unable to validate if adult is required", e);
         }
     }
 }

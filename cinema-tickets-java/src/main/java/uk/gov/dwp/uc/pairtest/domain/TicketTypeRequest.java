@@ -11,7 +11,11 @@ public class TicketTypeRequest {
     public TicketTypeRequest(Type type, int noOfTickets) {
         this.type = type;
         this.noOfTickets = noOfTickets;
-        //number of seats - infant doesn't take up a seat.
+    }
+
+    @Override
+    public String toString() {
+        return String.format("TYPE: %s , TICKETS: %s", type, noOfTickets);
     }
 
     public int getNoOfTickets() {

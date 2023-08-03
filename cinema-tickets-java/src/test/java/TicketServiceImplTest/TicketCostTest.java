@@ -5,7 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import uk.gov.dwp.uc.pairtest.TicketServiceImpl;
 
-public class PaymentTest {
+public class TicketCostTest {
     TicketServiceImpl ticketService = new TicketServiceImpl();
 
     @Test
