@@ -21,7 +21,7 @@ public class AccountIdTest {
     @ParameterizedTest(name = "{index} Invalid Account Number Requested: {0}")
     @ValueSource(longs = {-1L, 0L})
     @DisplayName("Invalid Account Numbers")
-    public void givenAccountIdLessThanOne_whenPurchaseTickets_thenInvalidPurchaseException(long accountID) {
+    public void givenAccountIdLessThanOne_whenPurchaseTickets_thenInvalidPurchaseException(Long accountID) {
         assertThrows(InvalidPurchaseException.class, () ->
                 ticketService.purchaseTickets(accountID, new TicketTypeRequest(TicketTypeRequest.Type.ADULT, 1)));
     }
@@ -29,7 +29,7 @@ public class AccountIdTest {
     @ParameterizedTest(name = "{index} Valid Account Number Requested: {0}")
     @ValueSource(longs = {1L, 100L, Long.MAX_VALUE})
     @DisplayName("Valid Account Numbers")
-    public void givenAccountIdGreaterThanZero_whenPurchaseTickets_thenSuccess(long accountID) {
+    public void givenAccountIdGreaterThanZero_whenPurchaseTickets_thenSuccess(Long accountID) {
         ticketService.purchaseTickets(accountID, new TicketTypeRequest(TicketTypeRequest.Type.ADULT, 1));
     }
 }

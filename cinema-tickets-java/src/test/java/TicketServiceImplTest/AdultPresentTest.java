@@ -30,7 +30,8 @@ public class AdultPresentTest {
                                 new TicketTypeRequest(TicketTypeRequest.Type.ADULT, 1),
                                 new TicketTypeRequest(TicketTypeRequest.Type.INFANT, 1)
                         }}
-                ), Arguments.of(
+                ),
+                Arguments.of(
                         new Object[]{new TicketTypeRequest[]{
                                 new TicketTypeRequest(TicketTypeRequest.Type.ADULT, 1),
                                 new TicketTypeRequest(TicketTypeRequest.Type.CHILD, 1),

@@ -1,28 +1,50 @@
 package TicketServiceImplTest;
 
-import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.dwp.uc.pairtest.TicketServiceImpl;
+import uk.gov.dwp.uc.pairtest.domain.TicketTypeRequest;
+
+import java.util.stream.Stream;
 
 public class TicketCostTest {
     TicketServiceImpl ticketService = new TicketServiceImpl();
 
-    @Test
-    @DisplayName("Adult cost")
-    void givenAdultTicket_whenPurchaseTickets_thenAssertCostEquals() {
-        Assertions.fail();
+    private static Stream<Arguments> provideValidInput() {
+        return Stream.of(
+                Arguments.of(
+                        new Object[]{new TicketTypeRequest[]{
+                                new TicketTypeRequest(TicketTypeRequest.Type.ADULT, 1)
+                        }}
+                ),
+                Arguments.of(
+                        new Object[]{new TicketTypeRequest[]{
+                                new TicketTypeRequest(TicketTypeRequest.Type.ADULT, 2),
+                                new TicketTypeRequest(TicketTypeRequest.Type.INFANT, 2)
+                        }}
+                ),
+                Arguments.of(
+                        new Object[]{new TicketTypeRequest[]{
+                                new TicketTypeRequest(TicketTypeRequest.Type.ADULT, 3),
+                                new TicketTypeRequest(TicketTypeRequest.Type.CHILD, 3),
+                                new TicketTypeRequest(TicketTypeRequest.Type.INFANT, 3)
+                        }}
+                )
+        );
     }
 
-    @Test
-    @DisplayName("Child and Adult cost")
-    void givenAdultAndChild_whenPurchaseTickets_thenAssertCostEquals() {
-        Assertions.fail();
+    @BeforeEach
+    public void beforeEach() {
+        ticketService = new TicketServiceImpl();
     }
 
-    @Test
-    @DisplayName("Infant and Adult cost")
-    void givenAdultAndInfant_whenPurchaseTickets_thenAssertCostEquals() {
-        Assertions.fail();
+    @ParameterizedTest(name = "{index} Valid Request {0}")
+    @MethodSource("provideValidInput")
+    @DisplayName("POSITIVE: Valid Input outputs correct cost")
+    public void givenValidTicket_whenPurchaseTickets_thenAssertCostEquals(TicketTypeRequest... requests) {
+        ticketService.purchaseTickets(1L, requests);
     }
 }
