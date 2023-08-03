@@ -2,6 +2,8 @@ package uk.gov.dwp.uc.pairtest;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import thirdparty.paymentgateway.TicketPaymentServiceImpl;
+import thirdparty.seatbooking.SeatReservationServiceImpl;
 import uk.gov.dwp.uc.pairtest.domain.TicketTypeRequest;
 import uk.gov.dwp.uc.pairtest.exception.InvalidPurchaseException;
 
@@ -16,9 +18,13 @@ public class TicketServiceImpl implements TicketService {
      */
     @Override
     public void purchaseTickets(Long accountId, TicketTypeRequest... ticketTypeRequests) throws InvalidPurchaseException {
-        LOGGER.debug("Purchasing Ticket(s)");
+        LOGGER.debug("Processing Ticket(s)");
         try {
             if (isRequestValid(accountId, ticketTypeRequests)) {
+                int totalAmountToPay = calculateCost(ticketTypeRequests);
+                submitPurchase(accountId, totalAmountToPay);
+                int totalSeatsToAllocate = 5;
+                reserveSeats(accountId, totalSeatsToAllocate);
             }
             else {
                 throw new InvalidPurchaseException();
@@ -26,12 +32,18 @@ public class TicketServiceImpl implements TicketService {
         } catch (Exception e) {
             throw new InvalidPurchaseException(e.getMessage(), e);
         }
-        //need to validate ticket request is valid - max of 20 tickets,
-        // 1 child per adult. Clarify infant not buying, still need a ticket.
-        //to account for infants having a ticket but not taking up a seat?
-        //send request to payment service
-        //send request to seating service.
-        //reject any invalid requests.
+    }
+
+    private void submitPurchase(Long accountId, int totalAmountToPay) {
+        LOGGER.debug(String.format("Making Payment of £%s", totalAmountToPay));
+        TicketPaymentServiceImpl ticketServiceImpl = new TicketPaymentServiceImpl();
+        ticketServiceImpl.makePayment(accountId, totalAmountToPay);
+    }
+
+    private void reserveSeats(Long accountId, int totalSeatsToAllocate) {
+        LOGGER.debug(String.format("Reserving %s Seats", totalSeatsToAllocate));
+        SeatReservationServiceImpl seatReservationServiceImpl = new SeatReservationServiceImpl();
+        seatReservationServiceImpl.reserveSeat(accountId, totalSeatsToAllocate);
     }
 
     private boolean isRequestValid(Long accountId, TicketTypeRequest... ticketTypeRequests) {
@@ -43,7 +55,7 @@ public class TicketServiceImpl implements TicketService {
                 && isAdultToMinorValid(ticketTypeRequests);
     }
 
-    private boolean isAccountIdValid(long accountId) {
+    private boolean isAccountIdValid(Long accountId) {
         LOGGER.debug("Checking Account ID is valid: " + accountId);
 //        try {
         if (accountId >= MINACCOUNTID) {
@@ -125,16 +137,13 @@ public class TicketServiceImpl implements TicketService {
     private boolean isAdultToMinorValid(TicketTypeRequest... requests) {
         LOGGER.debug("Checking there is an adult available if there are any infants or children");
         try {
-            boolean isAdultRequired;
+            boolean isAdultRequired = false;
             boolean isAdultPresent = false;
-            boolean isChildPresent = false;
-            boolean isInfantPresent = false;
             for (TicketTypeRequest request : requests
             ) {
                 switch (request.getTicketType()) {
                     case ADULT -> isAdultPresent = true;
-                    case INFANT -> isChildPresent = true;
-                    case CHILD -> isInfantPresent = true;
+                    case INFANT, CHILD -> isAdultRequired = true;
                     default -> {
                         throw new InvalidPurchaseException(
                                 String.format("Invalid Ticket Type Used: %s", request.getTicketType())
@@ -142,7 +151,7 @@ public class TicketServiceImpl implements TicketService {
                     }
                 }
             }
-            if (isChildPresent || isInfantPresent) {
+            if (isAdultRequired) {
                 LOGGER.debug("Adult is required as children or infants are present");
                 if (isAdultPresent) {
                     LOGGER.debug("Adult is Present as children or infants are present");
@@ -158,6 +167,20 @@ public class TicketServiceImpl implements TicketService {
             }
         } catch (Exception e) {
             throw new InvalidPurchaseException("Unable to validate if adult is required", e);
+        }
+    }
+
+    private int calculateCost(TicketTypeRequest... requests) {
+        LOGGER.debug("Calculating Total Cost");
+        try {
+            int total = 0;
+            for (TicketTypeRequest request : requests
+            ) {
+                total += request.getNoOfTickets() * request.getTicketType().getCost();
+            }
+            return total;
+        } catch (Exception e) {
+            throw new InvalidPurchaseException("Unable to Calculate Cost", e);
         }
     }
 }
