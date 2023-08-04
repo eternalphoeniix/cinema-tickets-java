@@ -11,6 +11,7 @@ import uk.gov.dwp.uc.pairtest.exception.InvalidPurchaseException;
 
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -51,13 +52,13 @@ public class AdultToInfantRatioTest {
         InvalidPurchaseException exception = assertThrows(InvalidPurchaseException.class, () ->
                 ticketService.purchaseTickets(accountID, requests));
         //Then assert Invalid Purchase Exception is thrown
-        assertEquals(InvalidPurchaseException.class, exception.getCause().getClass());
+        assertEquals("There are more infants than adults", exception.getCause().getMessage());
     }
 
     @ParameterizedTest(name = "ADULT: {0}, INFANT: {1}")
     @MethodSource("provideValidRatios")
     @DisplayName("POSITIVE: Valid Parent to Infant Ratio")
-    public void givenInfantsEqualToAdults_whenPurchaseTickets_thenSuccess(int numberOfAdults, int numberOfInfants) {
+    public void givenInfantsEqualToAdults_whenPurchaseTickets_thenNoAssertionThrow(int numberOfAdults, int numberOfInfants) {
         //Given a valid account ID, and an equal number of infant Ticket Type requests to Adults.
         Long accountID = 1L;
         TicketTypeRequest[] requests = new TicketTypeRequest[]{
@@ -66,6 +67,6 @@ public class AdultToInfantRatioTest {
         };
         //When purchasing tickets
         //Then no assertion is thrown
-        ticketService.purchaseTickets(1L, requests);
+        assertDoesNotThrow(() -> ticketService.purchaseTickets(1L, requests));
     }
 }

@@ -29,13 +29,13 @@ public class AccountIdTest {
         //When purchasing tickets
         InvalidPurchaseException exception = assertThrows(InvalidPurchaseException.class, () -> ticketService.purchaseTickets(accountID, request));
         //Then assert Invalid Purchase Exception is thrown
-        assertEquals(InvalidPurchaseException.class, exception.getCause().getClass());
+        assertEquals("Account ID Invalid", exception.getCause().getMessage());
     }
 
     @ParameterizedTest(name = "{0}")
     @ValueSource(longs = {1L, 100L, Long.MAX_VALUE})
     @DisplayName("POSITIVE: Valid Account Numbers")
-    public void givenAccountIdGreaterThanZero_whenPurchaseTickets_thenSuccess(Long accountID) {
+    public void givenAccountIdGreaterThanZero_whenPurchaseTickets_thenNoAssertionThrow(Long accountID) {
         //Given a valid account ID with a valid ticket type request.
         TicketTypeRequest request = new TicketTypeRequest(TicketTypeRequest.Type.ADULT, 1);
         //When purchasing tickets

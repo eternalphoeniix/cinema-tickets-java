@@ -46,12 +46,11 @@ public class TicketCostTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource("provideValidInput")
     @DisplayName("POSITIVE: Valid Input outputs correct cost")
-    public void givenValidTicket_whenPurchaseTickets_thenAssertCostEquals(TicketTypeRequest... requests) {
+    public void givenValidTicket_whenPurchaseTickets_thenNoAssertionThrow(TicketTypeRequest... requests) {
         //Given a valid account ID, valid ticket type requests
         Long accountID = 1L;
         //When purchasing tickets
         //Then assert no assertion thrown
         assertDoesNotThrow(() -> ticketService.purchaseTickets(accountID, requests));
-        ticketService.purchaseTickets(accountID, requests);
     }
 }

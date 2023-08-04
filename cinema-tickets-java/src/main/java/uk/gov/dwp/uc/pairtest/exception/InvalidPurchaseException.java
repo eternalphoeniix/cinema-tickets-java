@@ -19,6 +19,6 @@ public class InvalidPurchaseException extends RuntimeException {
 
     public InvalidPurchaseException(String message, Throwable cause) {
         super(message, cause);
-        logger.error(message);
+        logger.error(message + cause.getMessage());
     }
 }

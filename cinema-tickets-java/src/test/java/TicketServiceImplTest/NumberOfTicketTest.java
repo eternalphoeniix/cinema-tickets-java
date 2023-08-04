@@ -32,7 +32,7 @@ public class NumberOfTicketTest {
                 ticketService.purchaseTickets(accountID, request)
         );
         //Then assert Invalid Purchase Exception is thrown
-        assertEquals(InvalidPurchaseException.class, exception.getCause().getClass());
+        assertEquals("Invalid Number of Tickets requested", exception.getCause().getMessage());
     }
 
     @ParameterizedTest(name = "{0}")
@@ -52,13 +52,13 @@ public class NumberOfTicketTest {
                 )
         );
         //Then assert Invalid Purchase Exception is thrown
-        assertEquals(InvalidPurchaseException.class, exception.getCause().getClass());
+        assertEquals("Invalid Number of Tickets requested", exception.getCause().getMessage());
     }
 
     @ParameterizedTest(name = "{0}")
     @ValueSource(ints = {1, 10, 20})
     @DisplayName("POSITIVE: Solo Type valid Number of Tickets")
-    public void givenSoloTypeTicketsRequestedIsValid_whenPurchaseTickets_thenSuccess(int tickets) {
+    public void givenSoloTypeTicketsRequestedIsValid_whenPurchaseTickets_thenNoAssertionThrow(int tickets) {
         //Given a valid account ID, with a single type of TicketTypeRequests with valid number of tickets
         Long accountID = 1L;
         TicketTypeRequest request = new TicketTypeRequest(TicketTypeRequest.Type.ADULT, tickets);
@@ -70,7 +70,7 @@ public class NumberOfTicketTest {
     @ParameterizedTest(name = "{0}")
     @ValueSource(ints = {1, 5})
     @DisplayName("POSITIVE: Multi Type valid Number of Tickets")
-    public void givenMultiTypeTicketsRequestedIsValid_whenPurchaseTickets_thenSuccess(int tickets) {
+    public void givenMultiTypeTicketsRequestedIsValid_whenPurchaseTickets_thenNoAssertionThrow(int tickets) {
         //Given a valid account ID, with a multiple types of TicketTypeRequests with a valid number of tickets
         Long accountID = 1L;
         TicketTypeRequest[] requests = new TicketTypeRequest[]{

@@ -78,13 +78,13 @@ public class AdultPresentTest {
         //When purchasing tickets
         InvalidPurchaseException exception = assertThrows(InvalidPurchaseException.class, () -> ticketService.purchaseTickets(accountID, requests));
         //Then assert Invalid Purchase Exception is thrown
-        assertEquals(InvalidPurchaseException.class, exception.getCause().getClass());
+        assertEquals("Adult not present when attempting to purchase child/infant ticket", exception.getCause().getMessage());
     }
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("provideValidRatios")
     @DisplayName("POSITIVE: Adult Present with Minors")
-    public void givenAdultWithMinors_whenPurchaseTickets_thenSuccess(TicketTypeRequest... requests) {
+    public void givenAdultWithMinors_whenPurchaseTickets_thenNoAssertionThrow(TicketTypeRequest... requests) {
         //Given a valid account ID with a valid ticket type request.
         Long accountID = 1L;
         //When purchasing tickets

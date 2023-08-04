@@ -21,16 +21,13 @@ public class TicketServiceImpl implements TicketService {
         LOGGER.debug("Processing Ticket(s)");
         try {
             if (isRequestValid(accountId, ticketTypeRequests)) {
+                int totalSeatsToAllocate = calculateSeatsRequired(ticketTypeRequests);
+                reserveSeats(accountId, totalSeatsToAllocate);
                 int totalAmountToPay = calculateCost(ticketTypeRequests);
                 submitPurchase(accountId, totalAmountToPay);
-                int totalSeatsToAllocate = 5;
-                reserveSeats(accountId, totalSeatsToAllocate);
-            }
-            else {
-                throw new InvalidPurchaseException();
             }
         } catch (Exception e) {
-            throw new InvalidPurchaseException(e.getMessage(), e);
+            throw new InvalidPurchaseException("Issue with Purchasing Tickets. ", e);
         }
     }
 
@@ -48,22 +45,27 @@ public class TicketServiceImpl implements TicketService {
 
     private boolean isRequestValid(Long accountId, TicketTypeRequest... ticketTypeRequests) {
         LOGGER.debug("Checking Ticket Purchase request is valid");
-        return isAccountIdValid(accountId)
-                && isTicketCountWithinLimit(ticketTypeRequests)
-                && isAdultLapAvailableForInfant(ticketTypeRequests)
-                && isAdultToMinorValid(ticketTypeRequests);
+        boolean isValid =
+                isAccountIdValid(accountId)
+                        && isTicketCountWithinLimit(ticketTypeRequests)
+                        && isAdultToMinorValid(ticketTypeRequests)
+                        && isAdultLapAvailableForInfant(ticketTypeRequests);
+        if (isValid) {
+            return true;
+        }
+        else {
+            throw new InvalidPurchaseException("Ticket Purchase Request is invalid");
+        }
     }
 
     private boolean isAccountIdValid(Long accountId) {
         LOGGER.debug("Checking Account ID is valid: " + accountId);
         if (accountId >= MINACCOUNTID) {
-            LOGGER.debug("Account ID is valid");
+            LOGGER.trace("Account ID valid");
             return true;
         }
         else {
-            throw new InvalidPurchaseException(
-                    String.format("Account ID %s is less than the system minimum: %s", accountId, MINACCOUNTID)
-            );
+            throw new InvalidPurchaseException("Account ID Invalid");
         }
     }
 
@@ -76,25 +78,20 @@ public class TicketServiceImpl implements TicketService {
                     numberOfTickets += request.getNoOfTickets();
                 }
                 else {
-                    throw new InvalidPurchaseException(
-                            String.format("Individual TicketTypeRequest has an invalid number of tickets: %s, %s", request, numberOfTickets)
-                    );
+                    throw new InvalidPurchaseException("Invalid Number of Tickets requested");
                 }
             }
             if (numberOfTickets <= MAXREQUESTEDTICKETS) {
-                LOGGER.debug(
+                LOGGER.trace(
                         "Total Number of tickets {} is within the maximum limit of {}", numberOfTickets, MAXREQUESTEDTICKETS
                 );
                 return true;
             }
             else {
-                throw new InvalidPurchaseException(
-                        String.format("Number of tickets %s is outside the minimum limit of %s or maximum limit of %s", numberOfTickets, MINREQUESTEDTICKETS, MAXREQUESTEDTICKETS)
-                );
+                throw new InvalidPurchaseException("Invalid Number of Tickets requested");
             }
         } catch (Exception e) {
-            String message = "Ticket Type Request is invalid";
-            throw new InvalidPurchaseException(message);
+            throw e;
         }
     }
 
@@ -117,23 +114,20 @@ public class TicketServiceImpl implements TicketService {
                 }
             }
             if (numberOfInfants == 0) {
-                LOGGER.debug("There are no infants");
+                LOGGER.trace("There are no infants");
                 return true;
             }
             else if (numberOfAdults >= numberOfInfants) {
-                LOGGER.debug(
+                LOGGER.trace(
                         "There is at least one adult per infant. Adults: {}, infants: {}", numberOfAdults, numberOfInfants
                 );
                 return true;
             }
             else {
-                LOGGER.debug(
-                        "There are fewer adults than infants. Adults: {}, infants: {}", numberOfAdults, numberOfInfants
-                );
-                return false;
+                throw new InvalidPurchaseException("There are more infants than adults");
             }
         } catch (Exception e) {
-            throw new InvalidPurchaseException("Unable to validate adult available for infant", e);
+            throw e;
         }
     }
 
@@ -155,21 +149,21 @@ public class TicketServiceImpl implements TicketService {
                 }
             }
             if (isAdultRequired) {
-                LOGGER.debug("Adult is required as children or infants are present");
+                LOGGER.trace("Adult is required as children or infants are present");
                 if (isAdultPresent) {
-                    LOGGER.debug("Adult is Present as children or infants are present");
+                    LOGGER.trace("Adult is Present as children or infants are present");
                     return true;
                 }
                 else {
-                    throw new InvalidPurchaseException("Adult not present. Is required in presence of children or infants");
+                    throw new InvalidPurchaseException("Adult not present when attempting to purchase child/infant ticket");
                 }
             }
             else {
-                LOGGER.debug("No Adult is required as there are no children or infants  present");
+                LOGGER.trace("No Adult is required as there are no children or infants  present");
                 return true;
             }
         } catch (Exception e) {
-            throw new InvalidPurchaseException("Unable to validate if adult is required", e);
+            throw e;
         }
     }
 
@@ -179,11 +173,32 @@ public class TicketServiceImpl implements TicketService {
             int total = 0;
             for (TicketTypeRequest request : requests
             ) {
-                total += request.getNoOfTickets() * request.getTicketType().getCost();
+                int numberOfTickets = request.getNoOfTickets();
+                TicketTypeRequest.Type type = request.getTicketType();
+                int costPerTicket = request.getTicketType().getCost();
+                LOGGER.trace("Tickets: {}, Type: {}, Price: {}", numberOfTickets, type, costPerTicket);
+                total += numberOfTickets * costPerTicket;
             }
             return total;
         } catch (Exception e) {
             throw new InvalidPurchaseException("Unable to Calculate Cost", e);
+        }
+    }
+
+    private int calculateSeatsRequired(TicketTypeRequest... requests) {
+        LOGGER.debug("Calculating total seats");
+        try {
+            int total = 0;
+            for (TicketTypeRequest request : requests
+            ) {
+                int numberOfTickets = request.getNoOfTickets();
+                int seatsPerTicket = request.getTicketType().getSeatsPerTicket();
+                LOGGER.trace("Number of Tickets: {}, SeatsPerTicket: {}", numberOfTickets, seatsPerTicket);
+                total += numberOfTickets * seatsPerTicket;
+            }
+            return total;
+        } catch (Exception e) {
+            throw new InvalidPurchaseException("Unable to Calculate Number of Seats", e);
         }
     }
 }

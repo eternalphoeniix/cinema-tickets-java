@@ -27,17 +27,23 @@ public class TicketTypeRequest {
     }
 
     public enum Type {
-        ADULT(20),
-        CHILD(10),
-        INFANT(0);
+        ADULT(20, 1),
+        CHILD(10, 1),
+        INFANT(0, 0);
+        private final int seatsPerTicket;
         private final int ticketPrice;
 
-        Type(int ticketPrice) {
+        Type(int ticketPrice, int seatsRequired) {
             this.ticketPrice = ticketPrice;
+            this.seatsPerTicket = seatsRequired;
         }
 
         public int getCost() {
             return ticketPrice;
+        }
+
+        public int getSeatsPerTicket() {
+            return seatsPerTicket;
         }
     }
 }
