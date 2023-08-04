@@ -10,6 +10,8 @@ import uk.gov.dwp.uc.pairtest.domain.TicketTypeRequest;
 
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
 public class TicketCostTest {
     TicketServiceImpl ticketService = new TicketServiceImpl();
 
@@ -41,10 +43,15 @@ public class TicketCostTest {
         ticketService = new TicketServiceImpl();
     }
 
-    @ParameterizedTest(name = "{index} Valid Request {0}")
+    @ParameterizedTest(name = "{0}")
     @MethodSource("provideValidInput")
     @DisplayName("POSITIVE: Valid Input outputs correct cost")
     public void givenValidTicket_whenPurchaseTickets_thenAssertCostEquals(TicketTypeRequest... requests) {
-        ticketService.purchaseTickets(1L, requests);
+        //Given a valid account ID, valid ticket type requests
+        Long accountID = 1L;
+        //When purchasing tickets
+        //Then assert no assertion thrown
+        assertDoesNotThrow(() -> ticketService.purchaseTickets(accountID, requests));
+        ticketService.purchaseTickets(accountID, requests);
     }
 }

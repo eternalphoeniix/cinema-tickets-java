@@ -8,6 +8,8 @@ import uk.gov.dwp.uc.pairtest.TicketServiceImpl;
 import uk.gov.dwp.uc.pairtest.domain.TicketTypeRequest;
 import uk.gov.dwp.uc.pairtest.exception.InvalidPurchaseException;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class AccountIdTest {
@@ -18,18 +20,26 @@ public class AccountIdTest {
         ticketService = new TicketServiceImpl();
     }
 
-    @ParameterizedTest(name = "{index} Invalid Account Number Requested: {0}")
+    @ParameterizedTest(name = "{0}")
     @ValueSource(longs = {-1L, 0L})
-    @DisplayName("Invalid Account Numbers")
+    @DisplayName("NEGATIVE: Invalid Account Numbers")
     public void givenAccountIdLessThanOne_whenPurchaseTickets_thenInvalidPurchaseException(Long accountID) {
-        assertThrows(InvalidPurchaseException.class, () ->
-                ticketService.purchaseTickets(accountID, new TicketTypeRequest(TicketTypeRequest.Type.ADULT, 1)));
+        //Given an invalid account ID with a valid ticket type request.
+        TicketTypeRequest request = new TicketTypeRequest(TicketTypeRequest.Type.ADULT, 1);
+        //When purchasing tickets
+        InvalidPurchaseException exception = assertThrows(InvalidPurchaseException.class, () -> ticketService.purchaseTickets(accountID, request));
+        //Then assert Invalid Purchase Exception is thrown
+        assertEquals(InvalidPurchaseException.class, exception.getCause().getClass());
     }
 
-    @ParameterizedTest(name = "{index} Valid Account Number Requested: {0}")
+    @ParameterizedTest(name = "{0}")
     @ValueSource(longs = {1L, 100L, Long.MAX_VALUE})
-    @DisplayName("Valid Account Numbers")
+    @DisplayName("POSITIVE: Valid Account Numbers")
     public void givenAccountIdGreaterThanZero_whenPurchaseTickets_thenSuccess(Long accountID) {
-        ticketService.purchaseTickets(accountID, new TicketTypeRequest(TicketTypeRequest.Type.ADULT, 1));
+        //Given a valid account ID with a valid ticket type request.
+        TicketTypeRequest request = new TicketTypeRequest(TicketTypeRequest.Type.ADULT, 1);
+        //When purchasing tickets
+        //Then no assertion is thrown
+        assertDoesNotThrow(() -> ticketService.purchaseTickets(accountID, request));
     }
 }

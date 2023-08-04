@@ -35,20 +35,19 @@ public class TicketServiceImpl implements TicketService {
     }
 
     private void submitPurchase(Long accountId, int totalAmountToPay) {
-        LOGGER.debug(String.format("Making Payment of £%s", totalAmountToPay));
+        LOGGER.debug("Making Payment of £{}", totalAmountToPay);
         TicketPaymentServiceImpl ticketServiceImpl = new TicketPaymentServiceImpl();
         ticketServiceImpl.makePayment(accountId, totalAmountToPay);
     }
 
     private void reserveSeats(Long accountId, int totalSeatsToAllocate) {
-        LOGGER.debug(String.format("Reserving %s Seats", totalSeatsToAllocate));
+        LOGGER.debug("Reserving {} Seats", totalSeatsToAllocate);
         SeatReservationServiceImpl seatReservationServiceImpl = new SeatReservationServiceImpl();
         seatReservationServiceImpl.reserveSeat(accountId, totalSeatsToAllocate);
     }
 
     private boolean isRequestValid(Long accountId, TicketTypeRequest... ticketTypeRequests) {
         LOGGER.debug("Checking Ticket Purchase request is valid");
-        //could return this for dot chaining.
         return isAccountIdValid(accountId)
                 && isTicketCountWithinLimit(ticketTypeRequests)
                 && isAdultLapAvailableForInfant(ticketTypeRequests)
@@ -57,21 +56,20 @@ public class TicketServiceImpl implements TicketService {
 
     private boolean isAccountIdValid(Long accountId) {
         LOGGER.debug("Checking Account ID is valid: " + accountId);
-//        try {
         if (accountId >= MINACCOUNTID) {
             LOGGER.debug("Account ID is valid");
             return true;
         }
         else {
-            String message = String.format("Account ID %s is less than the system minimum: %s", accountId, MINACCOUNTID);
-            throw new InvalidPurchaseException(message);
+            throw new InvalidPurchaseException(
+                    String.format("Account ID %s is less than the system minimum: %s", accountId, MINACCOUNTID)
+            );
         }
     }
 
     private boolean isTicketCountWithinLimit(TicketTypeRequest... requests) {
         LOGGER.debug("Checking number of tickets does not exceed maximum");
         try {
-            String logMessage;
             int numberOfTickets = 0;
             for (TicketTypeRequest request : requests) {
                 if (request.getNoOfTickets() <= MAXREQUESTEDTICKETS && request.getNoOfTickets() >= MINREQUESTEDTICKETS) {
@@ -83,9 +81,10 @@ public class TicketServiceImpl implements TicketService {
                     );
                 }
             }
-            if (numberOfTickets <= MAXREQUESTEDTICKETS && numberOfTickets >= MINREQUESTEDTICKETS) {
-                logMessage = String.format("Number of tickets %s is within the maximum limit of %s", numberOfTickets, MAXREQUESTEDTICKETS);
-                LOGGER.debug(logMessage);
+            if (numberOfTickets <= MAXREQUESTEDTICKETS) {
+                LOGGER.debug(
+                        "Total Number of tickets {} is within the maximum limit of {}", numberOfTickets, MAXREQUESTEDTICKETS
+                );
                 return true;
             }
             else {
@@ -117,15 +116,19 @@ public class TicketServiceImpl implements TicketService {
                     }
                 }
             }
-            if (numberOfAdults >= numberOfInfants) {
+            if (numberOfInfants == 0) {
+                LOGGER.debug("There are no infants");
+                return true;
+            }
+            else if (numberOfAdults >= numberOfInfants) {
                 LOGGER.debug(
-                        String.format("There is at least one adult per infant. Adults: %s, infants: %s", numberOfAdults, numberOfInfants)
+                        "There is at least one adult per infant. Adults: {}, infants: {}", numberOfAdults, numberOfInfants
                 );
                 return true;
             }
             else {
                 LOGGER.debug(
-                        String.format("There are fewer adults than infants. Adults: %s, infants: %s", numberOfAdults, numberOfInfants)
+                        "There are fewer adults than infants. Adults: {}, infants: {}", numberOfAdults, numberOfInfants
                 );
                 return false;
             }

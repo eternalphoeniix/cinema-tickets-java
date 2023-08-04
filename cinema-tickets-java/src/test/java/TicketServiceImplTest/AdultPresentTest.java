@@ -11,6 +11,8 @@ import uk.gov.dwp.uc.pairtest.exception.InvalidPurchaseException;
 
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class AdultPresentTest {
@@ -67,21 +69,26 @@ public class AdultPresentTest {
         ticketService = new TicketServiceImpl();
     }
 
-    @ParameterizedTest(name = "{index} Request: {0}")
+    @ParameterizedTest(name = "{0}")
     @MethodSource("provideInValidRatios")
     @DisplayName("NEGATIVE: No Adult with CHILD")
     public void givenNoAdultWithMinors_whenPurchaseTickets_thenInvalidPurchaseException(TicketTypeRequest... requests) {
-        assertThrows(InvalidPurchaseException.class, () ->
-                ticketService.purchaseTickets(1L, requests
-                )
-        );
+        //Given A valid account ID, but a ticket type request is made by a Child/Infant without an adult.
+        Long accountID = 1L;
+        //When purchasing tickets
+        InvalidPurchaseException exception = assertThrows(InvalidPurchaseException.class, () -> ticketService.purchaseTickets(accountID, requests));
+        //Then assert Invalid Purchase Exception is thrown
+        assertEquals(InvalidPurchaseException.class, exception.getCause().getClass());
     }
 
-    @ParameterizedTest(name = "{index} Request: {0}")
+    @ParameterizedTest(name = "{0}")
     @MethodSource("provideValidRatios")
     @DisplayName("POSITIVE: Adult Present with Minors")
     public void givenAdultWithMinors_whenPurchaseTickets_thenSuccess(TicketTypeRequest... requests) {
-        ticketService.purchaseTickets(1L, requests
-        );
+        //Given a valid account ID with a valid ticket type request.
+        Long accountID = 1L;
+        //When purchasing tickets
+        //Then no assertion is thrown
+        assertDoesNotThrow(() -> ticketService.purchaseTickets(accountID, requests));
     }
 }

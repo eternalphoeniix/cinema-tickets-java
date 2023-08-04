@@ -11,6 +11,7 @@ import uk.gov.dwp.uc.pairtest.exception.InvalidPurchaseException;
 
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class AdultToInfantRatioTest {
@@ -36,25 +37,35 @@ public class AdultToInfantRatioTest {
         ticketService = new TicketServiceImpl();
     }
 
-    @ParameterizedTest(name = "{index} ADULT: {0}, INFANT: {1}")
+    @ParameterizedTest(name = "ADULT: {0}, INFANT: {1}")
     @MethodSource("provideInValidRatios")
     @DisplayName("NEGATIVE: Invalid Parent to Infant Ratio")
     public void givenMoreInfantsThanAdults_whenPurchaseTickets_thenInvalidPurchaseException(int numberOfAdults, int numberOfInfants) {
-        assertThrows(InvalidPurchaseException.class, () ->
-                ticketService.purchaseTickets(1L,
-                        new TicketTypeRequest(TicketTypeRequest.Type.ADULT, numberOfAdults),
-                        new TicketTypeRequest(TicketTypeRequest.Type.INFANT, numberOfInfants)
-                )
-        );
+        //Given a valid account ID, and more infant Ticket Type requests than Adults.
+        Long accountID = 1L;
+        TicketTypeRequest[] requests = new TicketTypeRequest[]{
+                new TicketTypeRequest(TicketTypeRequest.Type.ADULT, numberOfAdults),
+                new TicketTypeRequest(TicketTypeRequest.Type.INFANT, numberOfInfants)
+        };
+        //When purchasing tickets
+        InvalidPurchaseException exception = assertThrows(InvalidPurchaseException.class, () ->
+                ticketService.purchaseTickets(accountID, requests));
+        //Then assert Invalid Purchase Exception is thrown
+        assertEquals(InvalidPurchaseException.class, exception.getCause().getClass());
     }
 
-    @ParameterizedTest(name = "{index} ADULT: {0}, INFANT: {1}")
+    @ParameterizedTest(name = "ADULT: {0}, INFANT: {1}")
     @MethodSource("provideValidRatios")
     @DisplayName("POSITIVE: Valid Parent to Infant Ratio")
     public void givenInfantsEqualToAdults_whenPurchaseTickets_thenSuccess(int numberOfAdults, int numberOfInfants) {
-        ticketService.purchaseTickets(1L,
+        //Given a valid account ID, and an equal number of infant Ticket Type requests to Adults.
+        Long accountID = 1L;
+        TicketTypeRequest[] requests = new TicketTypeRequest[]{
                 new TicketTypeRequest(TicketTypeRequest.Type.ADULT, numberOfAdults),
                 new TicketTypeRequest(TicketTypeRequest.Type.INFANT, numberOfInfants)
-        );
+        };
+        //When purchasing tickets
+        //Then no assertion is thrown
+        ticketService.purchaseTickets(1L, requests);
     }
 }
